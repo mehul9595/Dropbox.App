@@ -7,7 +7,6 @@ D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\bin\Debug\System.Net.Http.Formatting
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\bin\Debug\Newtonsoft.Json.dll
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\bin\Debug\RestSharp.xml
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\bin\Debug\System.Net.Http.Formatting.xml
-D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\obj\Debug\Dropbox.App.csprojResolveAssemblyReference.cache
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\obj\Debug\View\DropBoxView.g.cs
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\obj\Debug\App.g.cs
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\obj\Debug\GeneratedInternalTypeHelper.g.cs

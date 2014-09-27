@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dropbox.App", "Dropbox.App\Dropbox.App.csproj", "{A6243396-EF64-4FF4-94CF-C99F936C1D85}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{CEF647D3-9C02-42EF-A067-86BAB8C1936D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{A6243396-EF64-4FF4-94CF-C99F936C1D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6243396-EF64-4FF4-94CF-C99F936C1D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6243396-EF64-4FF4-94CF-C99F936C1D85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEF647D3-9C02-42EF-A067-86BAB8C1936D}.Debug|Any CPU.ActiveCfg = Debug
+		{CEF647D3-9C02-42EF-A067-86BAB8C1936D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

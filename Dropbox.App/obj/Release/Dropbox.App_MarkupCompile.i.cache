@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\obj\Debug\
+D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\obj\Release\
 Dropbox.App
 none
 false
-DEBUG;TRACE
+TRACE
 D:\xwork\DropboxApp\Dropbox.App\Dropbox.App\App.xaml
 11796928176
 
-15-433793978
+15456688537
 18-1199455317
 View\DropBoxView.xaml;
 
-False
+True
 

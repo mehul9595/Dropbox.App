@@ -110,12 +110,29 @@ namespace Dropbox.App.ViewModels
         {
             foreach (string file in files)
             {
-                if (!Files.Contains(file))
+                //Check if file path is directory, if directory then loop through all the sub paths.
+                FileAttributes attributes = File.GetAttributes(file);
+                if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    Files.Add(file);
+                    string[] paths = Directory.GetFiles(file, "*.*", SearchOption.AllDirectories);
+
+                    foreach (var path in paths)
+                    {
+                        if (!Files.Contains(path))
+                        {
+                            Files.Add(path);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!Files.Contains(file))
+                    {
+                        Files.Add(file);
+                    }
                 }
             }
-            ((DelegateCommand) UploadCommand).RaiseCanExecuteChanged();
+            ((DelegateCommand)UploadCommand).RaiseCanExecuteChanged();
         }
 
         public void BrowseDialog()
@@ -142,7 +159,7 @@ namespace Dropbox.App.ViewModels
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
-        
+
         private void ThreadSafeUpdateStatus(string status)
         {
             Dispatcher.CurrentDispatcher.Invoke(
@@ -218,11 +235,12 @@ namespace Dropbox.App.ViewModels
                     var fileInfo = new FileInfo(file1);
 
                     int index = Files.IndexOf(file1) + 1;
-                    int percentage = (index*100)/Files.Count;
+                    int percentage = (index * 100) / Files.Count;
+                    string root = string.Format(@"dropbox/{0}/", fileInfo.Directory.Name);
 
-                    DropboxHelper.Client.UploadFile("dropbox", fileInfo.Name, File.ReadAllBytes(file));
-
-                    _worker.ReportProgress((int) Math.Round((double) percentage));
+                    var metaData = DropboxHelper.Client.UploadFile(root, fileInfo.Name, File.ReadAllBytes(file));
+                   
+                    _worker.ReportProgress((int)Math.Round((double)percentage));
 
                     ThreadSafeUpdateStatus(string.Format("Uploaded {0} of {1} files.", index, Files.Count));
                 }
