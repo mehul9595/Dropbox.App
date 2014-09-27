@@ -1,24 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Threading;
 
 namespace Dropbox.App
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    ///     Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            DropBoxView s = new DropBoxView();
-            this.MainWindow = s;
-            this.MainWindow.Show();
+            var s = new View.DropBoxView();
+            MainWindow = s;
+            MainWindow.Show();
+
+            DispatcherUnhandledException += App_DispatcherUnhandledException;
             base.OnStartup(e);
+        }
+
+        private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(e.Exception.ToString(), "Application  Error!!.", MessageBoxButton.OK);
         }
     }
 }

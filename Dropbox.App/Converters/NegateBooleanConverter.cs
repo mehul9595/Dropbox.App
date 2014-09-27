@@ -12,7 +12,7 @@ namespace Dropbox.App.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            bool v = (bool) value;
+            var v = (bool) value;
             return !v;
         }
 

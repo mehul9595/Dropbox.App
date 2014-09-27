@@ -5,7 +5,7 @@ namespace Dropbox.App.Model
 {
     public static class RegistryHelper
     {
-        public const string SUB_KEY = "SOFTWARE\\DropBoxSampleApp";
+        private const string SUB_KEY = "SOFTWARE\\DropBoxSampleApp";
         
         public static bool Write(string keyName, string value)
         {

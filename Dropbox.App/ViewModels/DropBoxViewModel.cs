@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Handlers;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Dropbox.App.Annotations;
@@ -20,25 +18,45 @@ namespace Dropbox.App.ViewModels
 {
     public class DropBoxViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<string> _files;
-        public ObservableCollection<string> Files
-        {
-            get
-            {
-                return _files;
-            }
-            set
-            {
-                _files = value;
-            }
-        }
+        #region PROPERTIES
+
+        private readonly BackgroundWorker _worker;
+        private bool _isAuthorized;
+        private string _statusText = "Ready!!!";
+
+        public ObservableCollection<string> Files { get; set; }
         public DropboxHelper DropboxHelper { get; set; }
         public ICommand UploadCommand { get; set; }
         public ICommand BrowseDialogCommand { get; set; }
         public ICommand AuthorizeCommand { get; set; }
 
+        public string StatusText
+        {
+            get { return _statusText; }
+            set
+            {
+                _statusText = value;
+                OnPropertyChanged("StatusText");
+            }
+        }
+
+        public bool IsAuthorized
+        {
+            get { return _isAuthorized; }
+            set
+            {
+                _isAuthorized = value;
+                OnPropertyChanged("IsAuthorized");
+            }
+        }
+
+        #endregion PROPERTIES
+
+        #region EVENTS
+
         //event
-        private BackgroundWorker _worker;
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public event ProgressChangedEventHandler ProgressChanged
         {
             add { _worker.ProgressChanged += value; }
@@ -51,37 +69,15 @@ namespace Dropbox.App.ViewModels
             remove { _worker.RunWorkerCompleted -= value; }
         }
 
-        private string _statusText = "Ready!!!";
-        public string StatusText
-        {
-            get { return _statusText; }
-            set
-            {
-                _statusText = value;
-                OnPropertyChanged("StatusText");
-            }
-        }
+        #endregion EVENTS
 
-        private bool _isAuthorized;
-
-        public bool IsAuthorized
-        {
-            get { return _isAuthorized; }
-            set
-            {
-                _isAuthorized = value;
-                OnPropertyChanged("IsAuthorized");
-            }
-        }
+        #region CONSTRUCTOR
 
         public DropBoxViewModel()
         {
             Files = new ObservableCollection<string>();
             DropboxHelper = new DropboxHelper();
-            UploadCommand = new DelegateCommand(UploadFiles, o =>
-            {
-                return Files.Count > 0 && IsAuthorized;
-            });
+            UploadCommand = new DelegateCommand(UploadFiles, o => { return Files.Count > 0 && IsAuthorized; });
 
             BrowseDialogCommand = new DelegateCommand(BrowseDialog, o => true);
             AuthorizeCommand = new DelegateCommand(OnAuthorizeCommand, o => !IsAuthorized);
@@ -92,22 +88,13 @@ namespace Dropbox.App.ViewModels
             TaskCompleted += OnTaskCompleted;
 
             IsAuthorized = DropboxHelper.Client.UserLogin != null;
-            var status = IsAuthorized ? "Ready!!!" : "Allow this App to use Dropbox.";
+            string status = IsAuthorized ? "Ready!!!" : "Allow this App to use Dropbox.";
             ThreadSafeUpdateStatus(status);
         }
 
-        private void OnAuthorizeCommand()
-        {
-            VerifyAuthorization();
-        }
+        #endregion CONSTRUCTOR
 
-        private void OnTaskCompleted(object sender, RunWorkerCompletedEventArgs runWorkerCompletedEventArgs)
-        {
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                StatusText = "Files uploaded successfully!!!";
-            }));
-        }
+        #region PUBLIC METHODS
 
         public void UploadFiles()
         {
@@ -119,20 +106,77 @@ namespace Dropbox.App.ViewModels
             _worker.RunWorkerAsync();
         }
 
+        public void AddFiles(string[] files)
+        {
+            foreach (string file in files)
+            {
+                if (!Files.Contains(file))
+                {
+                    Files.Add(file);
+                }
+            }
+            ((DelegateCommand) UploadCommand).RaiseCanExecuteChanged();
+        }
+
+        public void BrowseDialog()
+        {
+            var fileDialog = new OpenFileDialog();
+            fileDialog.CheckFileExists = true;
+            fileDialog.CheckPathExists = true;
+            fileDialog.Multiselect = true;
+
+            bool? result = fileDialog.ShowDialog();
+            if (result.HasValue && result.Value)
+            {
+                AddFiles(fileDialog.FileNames);
+            }
+        }
+
+        #endregion PUBLIC METHODS
+
+        #region PRIVATE METHODS
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+        
+        private void ThreadSafeUpdateStatus(string status)
+        {
+            Dispatcher.CurrentDispatcher.Invoke(
+                DispatcherPriority.Background, new Action(delegate { StatusText = status; }));
+        }
+
+        private void OnAuthorizeCommand()
+        {
+            VerifyAuthorization();
+        }
+
+        private void OnTaskCompleted(object sender, RunWorkerCompletedEventArgs runWorkerCompletedEventArgs)
+        {
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal,
+                new Action(() => { StatusText = "Files uploaded successfully!!!"; }));
+        }
+
         private void VerifyAuthorization()
         {
             string url = DropboxHelper.GetAuthorizationUrl();
             if (!string.IsNullOrEmpty(url))
             {
                 MessageBoxResult result =
-                    MessageBox.Show(string.Format("The app needs permission to use dropbox. Click 'Ok' to open this url: {0} in browser.", url),
+                    MessageBox.Show(
+                        string.Format(
+                            "The app needs permission to use dropbox. Click 'Ok' to open this url: {0} in browser.", url),
                         "Authorize App", MessageBoxButton.OKCancel);
 
                 if (result == MessageBoxResult.OK)
                 {
-                    System.Diagnostics.Process.Start(url);
+                    Process.Start(url);
 
-                    MessageBoxResult r = MessageBox.Show("Press 'Ok' once you Authorize the app to use dropbox.", "Wait!!!",
+                    MessageBoxResult r = MessageBox.Show("Press 'Ok' once you Authorize the app to use dropbox.",
+                        "Wait!!!",
                         MessageBoxButton.OK);
 
                     if (r == MessageBoxResult.OK)
@@ -166,7 +210,7 @@ namespace Dropbox.App.ViewModels
 
         private void UploadToDropbox()
         {
-            foreach (var file in Files)
+            foreach (string file in Files)
             {
                 string file1 = file;
                 try
@@ -174,11 +218,11 @@ namespace Dropbox.App.ViewModels
                     var fileInfo = new FileInfo(file1);
 
                     int index = Files.IndexOf(file1) + 1;
-                    var percentage = (index * 100) / Files.Count;
+                    int percentage = (index*100)/Files.Count;
 
                     DropboxHelper.Client.UploadFile("dropbox", fileInfo.Name, File.ReadAllBytes(file));
 
-                    _worker.ReportProgress((int)Math.Round((double)percentage));
+                    _worker.ReportProgress((int) Math.Round((double) percentage));
 
                     ThreadSafeUpdateStatus(string.Format("Uploaded {0} of {1} files.", index, Files.Count));
                 }
@@ -197,48 +241,6 @@ namespace Dropbox.App.ViewModels
             }
         }
 
-        public void AddFiles(string[] files)
-        {
-            foreach (var file in files)
-            {
-                if (!Files.Contains(file))
-                {
-                    Files.Add(file);
-                }
-            }
-            ((DelegateCommand)UploadCommand).RaiseCanExecuteChanged();
-        }
-
-        public void BrowseDialog()
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            fileDialog.CheckFileExists = true;
-            fileDialog.CheckPathExists = true;
-            fileDialog.Multiselect = true;
-
-            var result = fileDialog.ShowDialog();
-            if (result.HasValue && result.Value)
-            {
-                AddFiles(fileDialog.FileNames);
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void ThreadSafeUpdateStatus(string status)
-        {
-            Dispatcher.CurrentDispatcher.Invoke(
-                DispatcherPriority.Background, new Action(delegate()
-                {
-                    StatusText = status;
-                }));
-        }
+        #endregion PRIVATE METHODS
     }
 }

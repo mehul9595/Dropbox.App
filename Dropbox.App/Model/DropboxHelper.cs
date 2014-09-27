@@ -1,7 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.IO;
-using System.Net;
+﻿using System.Configuration;
 using DropNet;
 using DropNet.Models;
 
@@ -11,10 +8,10 @@ namespace Dropbox.App.Model
     {
         #region PRIVATE
 
-        private DropNetClient _client;
-        private UserLogin _usLogin;
         private readonly string _appKey;
         private readonly string _appSecret;
+        private DropNetClient _client;
+        private UserLogin _usLogin;
 
         public DropNetClient Client
         {
@@ -22,6 +19,8 @@ namespace Dropbox.App.Model
         }
 
         #endregion PRIVATE
+
+        #region CONSTRUCTOR
 
         public DropboxHelper()
         {
@@ -31,13 +30,16 @@ namespace Dropbox.App.Model
             InitClient();
         }
 
+        #endregion CONSTRUCTOR
+
+        #region METHODS
+
         public void InitClient()
         {
-            var accessToken = RegistryHelper.Read("AccessToken");
-            var secret = RegistryHelper.Read("Secret");
-//            RegistryHelper.Write("AccessToken", "dglqz3cbm4nqv9h8");
-//            RegistryHelper.Write("Secret", "nvl4wf0135njsro");
-            if (!string.IsNullOrEmpty(accessToken))
+            string accessToken = RegistryHelper.Read("AccessToken");
+            string secret = RegistryHelper.Read("Secret");
+
+            if (!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(secret))
             {
                 _client = new DropNetClient(_appKey, _appSecret, accessToken, secret);
             }
@@ -54,10 +56,7 @@ namespace Dropbox.App.Model
                 string url = _client.GetTokenAndBuildUrl();
                 return url;
             }
-            else
-            {
-                return string.Empty;
-            }
+            return string.Empty;
         }
 
         public bool GetAccessToken()
@@ -65,18 +64,15 @@ namespace Dropbox.App.Model
             bool isSuccess = false;
 
             _usLogin = _client.GetAccessToken();
-            if (_usLogin!=null && !string.IsNullOrEmpty(_usLogin.Token) && !string.IsNullOrEmpty(_usLogin.Secret))
+            if (_usLogin != null && !string.IsNullOrEmpty(_usLogin.Token) && !string.IsNullOrEmpty(_usLogin.Secret))
             {
-              isSuccess =  RegistryHelper.Write("AccessToken", _usLogin.Token) && RegistryHelper.Write("Secret", _usLogin.Secret);
+                isSuccess = RegistryHelper.Write("AccessToken", _usLogin.Token) &&
+                            RegistryHelper.Write("Secret", _usLogin.Secret);
             }
-            
+
             return isSuccess;
         }
 
-        public void TestCall()
-        {
-            var files = _client.Search("a");
-        }
-
+        #endregion METHODS
     }
 }

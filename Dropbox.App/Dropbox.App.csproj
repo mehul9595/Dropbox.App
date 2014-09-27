@@ -68,17 +68,17 @@
     <Compile Include="Model\DropboxHelper.cs" />
     <Compile Include="Model\RegistryHelper.cs" />
     <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="DropBoxView.xaml.cs">
-      <DependentUpon>DropBoxView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ViewModels\DropBoxViewModel.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="DropBoxView.xaml">
-      <SubType>Designer</SubType>
+    <Compile Include="View\DropBoxView.xaml.cs">
+      <DependentUpon>DropBoxView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="View\DropBoxView.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -109,9 +109,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="View\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

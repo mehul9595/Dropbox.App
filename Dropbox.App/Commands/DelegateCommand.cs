@@ -5,9 +5,9 @@ namespace Dropbox.App.Commands
 {
     public class DelegateCommand : ICommand
     {
-        private readonly Action<object> _execute = null;
-        private readonly Action _action = null;
-        private readonly Predicate<object> _canExecute = null;
+        private readonly Action _action;
+        private readonly Predicate<object> _canExecute;
+        private readonly Action<object> _execute;
 
         public DelegateCommand(Action<object> execute, Predicate<object> canExecute)
         {
@@ -28,7 +28,7 @@ namespace Dropbox.App.Commands
 
         public void Execute(object parameter)
         {
-            if (_execute!=null)
+            if (_execute != null)
             {
                 _execute(parameter);
             }
@@ -38,14 +38,14 @@ namespace Dropbox.App.Commands
             }
         }
 
+        public event EventHandler CanExecuteChanged;
+
         public void RaiseCanExecuteChanged()
         {
-            if (CanExecuteChanged!=null)
+            if (CanExecuteChanged != null)
             {
                 CanExecuteChanged(this, null);
             }
         }
-
-        public event EventHandler CanExecuteChanged;
     }
 }
